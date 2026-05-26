@@ -98,9 +98,9 @@ export default {
             });
 
             await InteractionHelper.safeEditReply(interaction, {
-    content: `💼 You have worked and earned **$${earned.toLocaleString()}** great!!`
+    content: `💸 You have worked and earned **$${earned.toLocaleString()}** great!!`
            });
-
+return;
             
     }, { command: 'work' })
 };
