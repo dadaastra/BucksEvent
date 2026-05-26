@@ -99,7 +99,7 @@ export default {
 
             await InteractionHelper.safeEditReply(interaction, {
     content: `💼 You have worked and earned **$${earned.toLocaleString()}** great!!`
-});
+           });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'work' })
