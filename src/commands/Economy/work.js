@@ -7,7 +7,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 const WORK_COOLDOWN = 5 * 60 * 1000;
 const MIN_WORK_AMOUNT = 50;
-const MAX_WORK_AMOUNT = 300;
+const MAX_WORK_AMOUNT = 100;
 const LAPTOP_MULTIPLIER = 1.5;
 const WORK_JOBS = [
     "Software Developer",
@@ -101,7 +101,7 @@ export default {
     content: `💼 You have worked and earned **$${earned.toLocaleString()}** great!!`
            });
 
-            await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
+            
     }, { command: 'work' })
 };
 
