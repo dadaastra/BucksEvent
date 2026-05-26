@@ -97,26 +97,9 @@ export default {
                 timestamp: new Date().toISOString()
             });
 
-            const embed = successEmbed(
-                "💼 Work Complete!",
-                `You worked as a **${job}** and earned **$${earned.toLocaleString()}**!${multiplierMessage}`
-            )
-                .addFields(
-                    {
-                        name: "💰 New Balance",
-                        value: `$${userData.wallet.toLocaleString()}`,
-                        inline: true,
-                    },
-                    {
-                        name: "⏰ Next Work",
-                        value: `<t:${Math.floor((now + WORK_COOLDOWN) / 1000)}:R>`,
-                        inline: true,
-                    }
-                )
-                .setFooter({
-                    text: `Requested by ${interaction.user.tag}`,
-                    iconURL: interaction.user.displayAvatarURL(),
-                });
+            await InteractionHelper.safeEditReply(interaction, {
+    content: `💼 You have worked and earned **$${earned.toLocaleString()}** great!!`
+});
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'work' })
