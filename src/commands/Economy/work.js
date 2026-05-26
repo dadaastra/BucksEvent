@@ -133,7 +133,7 @@ export default {
 
         await InteractionHelper.safeEditReply(interaction, {
             content:
-                `💸 You have worked as **${job}** and earned **$${earned.toLocaleString()}** great!!`
+                `💸 You have worked and earned **$${earned.toLocaleString()}** great!!`
         });
 
         return;
