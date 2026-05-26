@@ -97,7 +97,7 @@ export default {
                 timestamp: new Date().toISOString()
             });
 
-            const embed = (
+            const embed = successEmbed(
                 "💼 Work Complete!",
                 `You worked as a **${job}** and earned **$${earned.toLocaleString()}**!${multiplierMessage}`
             )
