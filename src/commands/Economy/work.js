@@ -29,25 +29,24 @@ export default {
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
-        if (!deferred) return;
-            
-            const userId = interaction.user.id;
-            const guildId = interaction.guildId;
-            const now = Date.now();
+        if (cooldownActive) {
+    if (extraWorkShifts > 0) {
+        inventory["extra_work"] = (inventory["extra_work"] || 0) - 1;
+        usedConsumable = true;
+    } else {
+        const remaining = lastWork + WORK_COOLDOWN - now;
 
-            const userData = await getEconomyData(client, guildId, userId);
+        const hours = Math.floor(remaining / 3600000);
+        const minutes = Math.floor((remaining % 3600000) / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
 
-            if (!userData) {
-                const hours = Math.floor(remaining / 3600000);
-const minutes = Math.floor((remaining % 3600000) / 60000);
-const seconds = Math.floor((remaining % 60000) / 1000);
+        await InteractionHelper.safeEditReply(interaction, {
+            content: `⏳ You are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s**.`
+        });
 
-await InteractionHelper.safeEditReply(interaction, {
-    content: `⏳ You are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s later.**.`
-});
-
-return;
-            }
+        return;
+    }
+}
 
             logger.debug(`[ECONOMY] Work command started for ${userId}`, { userId, guildId });
 
