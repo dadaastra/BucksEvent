@@ -86,7 +86,7 @@ export default {
 
                 await InteractionHelper.safeEditReply(interaction, {
                     content:
-                        `Hey poor, you are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s** later. haha!!.`
+                        `Hey poor, you are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s** later. haha!!`
                 });
 
                 return;
