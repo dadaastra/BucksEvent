@@ -31,15 +31,12 @@ cooldown: 86400000,
         }
     },
     {
-        id: 'diamond_pickaxe',
-        name: 'Diamond Pickaxe',
-        price: 50000,
-        description: 'Increases yield from `/mine`',
-        type: 'tool',
-        durability: 100,
-        effect: {
-            type: 'mining_yield',
-            multiplier: 2.0
+        id: 'homies',
+        name: 'homies role',
+        price: 500,
+        description: 'buy a role',
+        type: 'role',
+        role:1442210045357199421
         }
     },
     {
