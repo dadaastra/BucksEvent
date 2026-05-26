@@ -37,7 +37,7 @@ cooldown: 86400000,
         description: 'get a homies role',
         type: 'role',
         roleid: `1442210045357199421`,
-        
+    }
     },
     {
         id: 'premium_role',
