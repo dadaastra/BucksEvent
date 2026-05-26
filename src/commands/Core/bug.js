@@ -9,7 +9,7 @@ export default {
 
     async execute(interaction) {
         const githubButton = new ButtonBuilder()
-            .setLabel('?? Report Bug on GitHub')
+            .setLabel('Support Server')
             .setStyle(ButtonStyle.Link)
             .setURL('https://discord.gg/Syzz6nVX');
 
