@@ -38,12 +38,15 @@ export default {
             const userData = await getEconomyData(client, guildId, userId);
 
             if (!userData) {
-                throw createError(
-                    "Failed to load economy data for work",
-                    ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
-                    { userId, guildId }
-                );
+                const hours = Math.floor(remaining / 3600000);
+const minutes = Math.floor((remaining % 3600000) / 60000);
+const seconds = Math.floor((remaining % 60000) / 1000);
+
+await InteractionHelper.safeEditReply(interaction, {
+    content: `⏳ You are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s later.**.`
+});
+
+return;
             }
 
             logger.debug(`[ECONOMY] Work command started for ${userId}`, { userId, guildId });
