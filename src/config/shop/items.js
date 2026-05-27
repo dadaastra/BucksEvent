@@ -129,9 +129,9 @@ roleId: null,
         }
     },
     {
-        id: 'personal_safe',
+        id: 'safe',
         name: '🔒 Personal Safe',
-        price: 30000,
+        price: 30,
         description: 'Protects your money from theft. Prevents others from robbing you.',
         type: 'tool',
         durability: null,
