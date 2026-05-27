@@ -164,7 +164,7 @@ export default {
         else {
 
             message =
-                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks.`;
+                `💰 ${targetUser.username} has **${total.toLocaleString()}** micebucks and Your Rank: ${userRank > 0 ? `#${userRank}`;
 
         }
 
