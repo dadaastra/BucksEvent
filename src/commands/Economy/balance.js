@@ -156,7 +156,7 @@ export default {
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💵 Currently you have **$${total.toLocaleString()}** micebucks. Your Rank: ${userRank > 0 ? `#${userRank}` : "No ranking data available"}`;
+                `💵 Currently you have **$${total.toLocaleString()}** micebucks.`;
 
         }
 
