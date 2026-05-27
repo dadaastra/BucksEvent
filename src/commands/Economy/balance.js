@@ -156,7 +156,7 @@ export default {
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💵 Currently you have **$${total.toLocaleString()}** micebucks. $${userRank}`;
+                `💵 Currently you have **$${total.toLocaleString()}** micebucks.{userRank}`;
 
         }
 
