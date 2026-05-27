@@ -88,7 +88,7 @@ export default {
         // ECONOMY LEADERBOARD POSITION
         // =========================
 
-        let leaderboardPosition = `**${leaderboardPosition}**`;
+        let leaderboardPosition = `**economy_${leaderboardPosition}**`;
 
         try {
 
