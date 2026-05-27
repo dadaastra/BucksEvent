@@ -1,10 +1,11 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { getEconomyData, getMaxBankCapacity } from '../../utils/economy.js';
+import { getEconomyData } from '../../utils/economy.js';
 import { withErrorHandling, createError, ErrorTypes } from '../../utils/errorHandler.js';
 import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 export default {
+
     data: new SlashCommandBuilder()
         .setName('balance')
         .setDescription("Check your or someone else's balance")
@@ -17,30 +18,45 @@ export default {
 
     execute: withErrorHandling(async (interaction, config, client) => {
 
+        // Defer reply safely
         const deferred = await InteractionHelper.safeDefer(interaction);
         if (!deferred) return;
 
-        const targetUser = interaction.options.getUser('user') || interaction.user;
+        // Target user
+        const targetUser =
+            interaction.options.getUser('user') || interaction.user;
+
         const guildId = interaction.guildId;
 
-        logger.debug(`[ECONOMY] Balance check for ${targetUser.id}`, {
-            userId: targetUser.id,
-            guildId
-        });
+        logger.debug(
+            `[ECONOMY] Balance check for ${targetUser.id}`,
+            {
+                userId: targetUser.id,
+                guildId
+            }
+        );
 
-        // Bots can't use economy
+        // Prevent bots
         if (targetUser.bot) {
+
             throw createError(
                 'Bot user queried for balance',
                 ErrorTypes.VALIDATION,
                 "Bots don't have an economy balance."
             );
+
         }
 
         // Get user economy data
-        const userData = await getEconomyData(client, guildId, targetUser.id);
+        const userData = await getEconomyData(
+            client,
+            guildId,
+            targetUser.id
+        );
 
+        // Database error
         if (!userData) {
+
             throw createError(
                 'Failed to load economy data',
                 ErrorTypes.DATABASE,
@@ -50,100 +66,127 @@ export default {
                     guildId
                 }
             );
+
         }
 
-        // Safe values
-        const wallet = typeof userData.wallet === 'number'
-            ? userData.wallet
-            : 0;
+        // Safe wallet value
+        const wallet =
+            typeof userData.wallet === 'number'
+                ? userData.wallet
+                : 0;
 
-        const bank = typeof userData.bank === 'number'
-            ? userData.bank
-            : 0;
+        // Safe bank value
+        const bank =
+            typeof userData.bank === 'number'
+                ? userData.bank
+                : 0;
 
+        // Total money
         const total = wallet + bank;
 
         // =========================
-        // LEADERBOARD POSITION SYSTEM
+        // ECONOMY LEADERBOARD POSITION
         // =========================
 
-        let leaderboardPosition = 'Unknown';
+        let leaderboardPosition = 'Unranked';
 
         try {
 
-            // Get all users from guild economy
-            const allUsers = await client.db.get(
-                `economy_${guildId}`
-            ) || {};
+            // SAME DATABASE AS ELEADERBOARD
+            const allUsers =
+                await client.db.get(`economy_${guildId}`) || {};
 
-            // Convert users to array
-            const leaderboard = Object.entries(allUsers).map(([userId, data]) => {
+            // Convert object to leaderboard array
+            const leaderboard = Object.entries(allUsers).map(
+                ([userId, data]) => {
 
-                const userWallet = typeof data.wallet === 'number'
-                    ? data.wallet
-                    : 0;
+                    const userWallet =
+                        typeof data.wallet === 'number'
+                            ? data.wallet
+                            : 0;
 
-                const userBank = typeof data.bank === 'number'
-                    ? data.bank
-                    : 0;
+                    const userBank =
+                        typeof data.bank === 'number'
+                            ? data.bank
+                            : 0;
 
-                return {
-                    userId,
-                    total: userWallet + userBank
-                };
+                    return {
+                        userId,
+                        total: userWallet + userBank
+                    };
 
-            });
+                }
+            );
 
-            // Sort highest to lowest
-            leaderboard.sort((a, b) => b.total - a.total);
+            // Sort by highest money
+            leaderboard.sort(
+                (a, b) => b.total - a.total
+            );
 
-            // Find user position
+            // Find user rank
             const position = leaderboard.findIndex(
                 user => user.userId === targetUser.id
             );
 
-            leaderboardPosition = position !== -1
-                ? `#${position + 1}`
-                : 'Unranked';
+            // Set leaderboard position
+            if (position !== -1) {
+
+                leaderboardPosition = `#${position + 1}`;
+
+            }
 
         } catch (err) {
 
-            logger.error('[ECONOMY] Failed to calculate leaderboard position', {
-                error: err.message
-            });
+            logger.error(
+                '[ECONOMY] Failed to calculate leaderboard position',
+                {
+                    error: err.message
+                }
+            );
 
         }
 
         // =========================
-        // TEXT RESPONSE
+        // RESPONSE MESSAGE
         // =========================
 
         let message;
 
+        // Self balance
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💰 You have **$${total.toLocaleString()}** bucks and you are **${eleaderboardPosition}** on the leaderboard.`;
-
-        } else {
-
-            message =
-                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks and is **${eleaderboardPosition}** on the leaderboard.`;
+                `💰 You have **$${total.toLocaleString()}** bucks and you are **${leaderboardPosition}** on the economy leaderboard.`;
 
         }
 
-        logger.info('[ECONOMY] Balance retrieved', {
-            userId: targetUser.id,
-            wallet,
-            bank,
-            total,
-            eleaderboardPosition
-        });
+        // Other user's balance
+        else {
 
-        // Send text reply
-        await InteractionHelper.safeEditReply(interaction, {
-            content: message
-        });
+            message =
+                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks and is **${leaderboardPosition}** on the economy leaderboard.`;
+
+        }
+
+        logger.info(
+            '[ECONOMY] Balance retrieved',
+            {
+                userId: targetUser.id,
+                wallet,
+                bank,
+                total,
+                leaderboardPosition
+            }
+        );
+
+        // Send normal text reply
+        await InteractionHelper.safeEditReply(
+            interaction,
+            {
+                content: message
+            }
+        );
 
     }, { command: 'balance' })
+
 };
