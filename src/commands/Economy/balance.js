@@ -128,7 +128,7 @@ export default {
         } else {
 
             message =
-                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks and is **${leaderboardPosition}** on the leaderboard.`;
+                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks and is **${eleaderboardPosition}** on the leaderboard.`;
 
         }
 
@@ -137,7 +137,7 @@ export default {
             wallet,
             bank,
             total,
-            leaderboardPosition
+            eleaderboardPosition
         });
 
         // Send text reply
