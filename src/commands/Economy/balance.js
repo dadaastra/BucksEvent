@@ -88,7 +88,7 @@ export default {
         // ECONOMY LEADERBOARD POSITION
         // =========================
 
-        let leaderboardPosition = `Unranked`;
+        let leaderboardPosition = `userRank`;
 
         try {
 
@@ -156,7 +156,7 @@ export default {
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💵 Currently you have **$${total.toLocaleString()}** micebucks.`;
+                `💵 Currently you have **$${total.toLocaleString()}** micebucks. **${leaderboardPosition}**`;
 
         }
 
