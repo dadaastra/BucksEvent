@@ -156,7 +156,7 @@ export default {
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💰 You have **$${total.toLocaleString()}** bucks and **${eleaderboardPosition}** on the leaderboard.`;
+                `💰 You have **$${total.toLocaleString()}** bucks.`;
 
         }
 
@@ -164,7 +164,7 @@ export default {
         else {
 
             message =
-                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks and **${eleaderboardPosition}** on the leaderboard.`;
+                `💰 ${targetUser.username} has **$${total.toLocaleString()}** bucks.`;
 
         }
 
