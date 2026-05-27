@@ -88,7 +88,7 @@ export default {
         // ECONOMY LEADERBOARD POSITION
         // =========================
 
-        let leaderboardPosition = ``;
+        let leaderboardPosition = `ranked`;
 
         try {
 
