@@ -50,7 +50,7 @@ cooldown: 86400000,
         type: 'role',
 roleId: 1355617103230537817,
         effect: {
-            type: 'discord_role',
+            type: 'role',
             
         }
     },
