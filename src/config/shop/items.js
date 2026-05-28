@@ -42,18 +42,22 @@ cooldown: 86400000,
             multiplier: 2.0
         }
     },
-    {
-        id: 'rich_role',
-        name: '💎 Rich Role',
-        price: 30,
-        description: 'Get the Rich role',
-        itemtype: 'role',
-        roleId: '1355617103230537817',
-        
-        effect: {
-            type: 'discord_role'
-            
-        }
+    if (item.type === 'role') {
+
+    const role = interaction.guild.roles.cache.get(item.roleId);
+
+    if (!role) {
+        return interaction.editReply({
+            content: '❌ Role not found.'
+        });
+    }
+
+    await interaction.member.roles.add(role);
+
+    return interaction.editReply({
+        content: `✅ You purchased ${item.name}!`
+    });
+}
     },
     {
         id: 'lucky_clover',
