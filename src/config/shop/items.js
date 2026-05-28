@@ -49,11 +49,10 @@ cooldown: 86400000,
         description: 'Get the Rich role',
         type: 'role',
 
-        // Replace with your Rich Role ID
-        roleId: 1355617103230537817,
 
         effect: {
             type: 'role_add'
+            roleId: 1355617103230537817, 
         }
     },
     {
