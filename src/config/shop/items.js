@@ -48,7 +48,7 @@ cooldown: 86400000,
         price: 30,
         description: 'get a rich role.',
         type: 'role',
-roleId: 1355617103230537817,
+roleId: `1355617103230537817`,
         effect: {
             type: 'daily_bonus',
             multiplier: 1.1
