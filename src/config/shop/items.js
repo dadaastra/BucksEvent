@@ -47,10 +47,10 @@ cooldown: 86400000,
         name: '💎 Rich Role',
         price: 30,
         description: 'Get the Rich role permanently.',
-        type: 'addRole',
+        type: 'role',
 
         // Replace with your Rich Role ID
-        roleId: '1355617103230537817',
+        roleId: 1355617103230537817,
 
         effect: {
             type: 'discord_role'
