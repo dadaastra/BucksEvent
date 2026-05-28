@@ -23,7 +23,6 @@ export const shopItems = [
         description: 'A special role granting a fancy color and a 10% daily bonus.',
         type: 'role',
 roleId: 1355617103230537817,
-        
         }
     },
     {
