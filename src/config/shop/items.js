@@ -43,18 +43,16 @@ cooldown: 86400000,
         }
     },
     {
-        id: 'rich_role',
-        name: '💎 Rich Role',
-        price: 30,
-        description: 'Get the Rich role',
-        itemtype: 'role',
-        roleId: '1355617103230537817',
-        
+        id: 'premium_role',
+        name: 'Premium Server Role',
+        price: 15000,
+        description: 'A special role granting a fancy color and a 10% daily bonus.',
+        type: 'role',
+roleId: null,
         effect: {
-            type: 'discord_role'
-            
+            type: 'daily_bonus',
+            multiplier: 1.1
         }
-}
     },
     {
         id: 'lucky_clover',
@@ -230,7 +228,3 @@ export function validatePurchase(itemId, userData) {
 
     return { valid: true };
 }
-
-
-
-
