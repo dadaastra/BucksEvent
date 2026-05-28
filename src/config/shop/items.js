@@ -47,7 +47,7 @@ cooldown: 86400000,
         name: '💎 Rich Role',
         price: 30,
         description: 'Get the Rich role permanently.',
-        type: 'interaction.member.roles.add(add)',
+        type: 'interaction.member.roles.add(role)',
 
         // Replace with your Rich Role ID
         roleId: 1355617103230537817,
