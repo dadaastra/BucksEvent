@@ -1,163 +1,143 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
-import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
-import { shopItems } from '../../config/shop/items.js';
-import { getEconomyData, setEconomyData } from '../../utils/economy.js';
-import { getGuildConfig } from '../../services/guildConfig.js';
-import { withErrorHandling, createError, ErrorTypes } from '../../utils/errorHandler.js';
-import { MessageTemplates } from '../../utils/messageTemplates.js';
-import { InteractionHelper } from '../../utils/interactionHelper.js';
+// buy.js
 
-const SHOP_ITEMS = shopItems;
+import {
+    getItemById,
+    validatePurchase
+} from '../data/shopItems.js';
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('buy')
-        .setDescription('Buy an item from the shop')
-        .addStringOption(option =>
-            option
-                .setName('item_id')
-                .setDescription('ID of the item to buy')
-                .setRequired(true)
-        )
-        .addIntegerOption(option =>
-            option
-                .setName('quantity')
-                .setDescription('Quantity to buy (default: 1)')
-                .setRequired(false)
-                .setMinValue(1)
-                .setMaxValue(10)
-        ),
+export async function buyItem(interaction, userData) {
 
-    execute: withErrorHandling(async (interaction, config, client) => {
-        const deferred = await InteractionHelper.safeDefer(interaction);
-        if (!deferred) return;
+    // =========================
+    // GET ITEM
+    // =========================
 
-            const userId = interaction.user.id;
-            const guildId = interaction.guildId;
-            const itemId = interaction.options.getString("item_id").toLowerCase();
-            const quantity = interaction.options.getInteger("quantity") || 1;
+    const itemId = interaction.options.getString('item');
 
-            const item = SHOP_ITEMS.find(i => i.id === itemId);
+    const item = getItemById(itemId);
 
-            if (!item) {
-                throw createError(
-                    `Item ${itemId} not found`,
-                    ErrorTypes.VALIDATION,
-                    `The item ID \`${itemId}\` does not exist in the shop.`,
-                    { itemId }
-                );
-            }
+    // =========================
+    // ITEM CHECK
+    // =========================
 
-            if (quantity < 1) {
-                throw createError(
-                    "Invalid quantity",
-                    ErrorTypes.VALIDATION,
-                    "You must purchase a quantity of 1 or more.",
-                    { quantity }
-                );
-            }
+    if (!item) {
 
-            const totalCost = item.price * quantity;
+        return interaction.reply({
+            content: '❌ Item not found.',
+            ephemeral: true
+        });
+    }
 
-            const guildConfig = await getGuildConfig(client, guildId);
-            const PREMIUM_ROLE_ID = guildConfig.premiumRoleId;
+    // =========================
+    // VALIDATE PURCHASE
+    // =========================
 
-            const userData = await getEconomyData(client, guildId, userId);
+    const validation = validatePurchase(itemId, userData);
 
-            if (userData.wallet < totalCost) {
-                throw createError(
-                    "Insufficient funds",
-                    ErrorTypes.VALIDATION,
-                    `You need **$${totalCost.toLocaleString()}** to purchase ${quantity}x **${item.name}**, but you only have **$${userData.wallet.toLocaleString()}** in cash.`,
-                    { required: totalCost, current: userData.wallet, itemId, quantity }
-                );
-            }
+    if (!validation.valid) {
 
-            if (item.type === "role" && itemId === "premium_role") {
-                if (!PREMIUM_ROLE_ID) {
-                    throw createError(
-                        "Premium role not configured",
-                        ErrorTypes.CONFIGURATION,
-                        "The **Premium Shop Role** has not been configured by a server administrator yet.",
-                        { itemId }
-                    );
-                }
-                if (interaction.member.roles.cache.has(PREMIUM_ROLE_ID)) {
-                    throw createError(
-                        "Role already owned",
-                        ErrorTypes.VALIDATION,
-                        `You already have the **${item.name}** role.`,
-                        { itemId, roleId: PREMIUM_ROLE_ID }
-                    );
-                }
-                if (quantity > 1) {
-                    throw createError(
-                        "Invalid quantity for role",
-                        ErrorTypes.VALIDATION,
-                        `You can only purchase the **${item.name}** role once.`,
-                        { itemId, quantity }
-                    );
-                }
-            }
+        return interaction.reply({
+            content: `❌ ${validation.reason}`,
+            ephemeral: true
+        });
+    }
 
-            userData.wallet -= totalCost;
+    // =========================
+    // CHECK MONEY
+    // =========================
 
-            let successDescription = `You successfully purchased ${quantity}x **${item.name}** for **$${totalCost.toLocaleString()}**!`;
+    if (userData.wallet < item.price) {
 
-            if (item.type === "role" && itemId === "premium_role") {
-                const member = interaction.member;
+        return interaction.reply({
+            content:
+                `❌ You need $${item.price.toLocaleString()} to buy this item.`,
+            ephemeral: true
+        });
+    }
 
-                const role = interaction.guild.roles.cache.get(PREMIUM_ROLE_ID);
+    // =========================
+    // REMOVE MONEY
+    // =========================
 
-                if (!role) {
-                    throw createError(
-                        "Role not found",
-                        ErrorTypes.CONFIGURATION,
-                        "The configured premium role no longer exists in this guild.",
-                        { roleId: PREMIUM_ROLE_ID }
-                    );
-                }
+    userData.wallet -= item.price;
 
-                try {
-                    await member.roles.add(
-                        role,
-                        `Purchased role: ${item.name}`,
-                    );
-                    successDescription += `\n\n**👑 The role ${role.toString()} has been granted to you!**`;
-                } catch (roleError) {
-                    userData.wallet += totalCost;
-                    await setEconomyData(client, guildId, userId, userData);
-                    throw createError(
-                        "Role assignment failed",
-                        ErrorTypes.DISCORD_API,
-                        "Successfully deducted money, but failed to grant the role. Your cash has been refunded.",
-                        { roleId: PREMIUM_ROLE_ID, originalError: roleError.message }
-                    );
-                }
-            } else if (item.type === "upgrade") {
-                userData.upgrades[itemId] = true;
-                successDescription += `\n\n**✨ Your upgrade is now active!**`;
-            } else if (item.type === "consumable") {
-                userData.inventory[itemId] =
-                    (userData.inventory[itemId] || 0) + quantity;
-            }
+    // Create inventory
+    if (!userData.inventory) {
+        userData.inventory = {};
+    }
 
-            await setEconomyData(client, guildId, userId, userData);
+    // =========================
+    // NORMAL ROLE
+    // =========================
 
-            const embed = successEmbed(
-                "💰 Purchase Successful",
-                successDescription,
-            ).addFields({
-                name: "New Balance",
-                value: `$${userData.wallet.toLocaleString()}`,
-                inline: true,
+    if (item.type === 'role') {
+
+        // Get role
+        const role =
+            interaction.guild.roles.cache.get(item.roleId);
+
+        if (!role) {
+
+            return interaction.reply({
+                content: '❌ Role not found.',
+                ephemeral: true
             });
+        }
 
-            await InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: [MessageFlags.Ephemeral] });
-    }, { command: 'buy' })
-};
+        // Add role
+        await interaction.member.roles.add(role);
 
+        // Save ownership
+        userData.inventory[item.id] = true;
 
+        return interaction.reply({
+            content:
+                `✅ You bought **${item.name}** for **$${item.price.toLocaleString()}**`
+        });
+    }
 
+    // =========================
+    // UNLIMITED REDEEM ROLE
+    // =========================
 
+    if (item.type === 'unlimited_role') {
 
+        // Get role
+        const role =
+            interaction.guild.roles.cache.get(item.roleId);
+
+        if (!role) {
+
+            return interaction.reply({
+                content: '❌ Role not found.',
+                ephemeral: true
+            });
+        }
+
+        // Add role if user doesn't already have it
+        if (!interaction.member.roles.cache.has(role.id)) {
+
+            await interaction.member.roles.add(role);
+        }
+
+        // Track purchase count
+        if (!userData.inventory.redeem_role_count) {
+            userData.inventory.redeem_role_count = 0;
+        }
+
+        userData.inventory.redeem_role_count++;
+
+        return interaction.reply({
+            content:
+                `✅ You bought **${item.name}** for **$${item.price.toLocaleString()}**\n🎟️ Total Redeem Purchases: ${userData.inventory.redeem_role_count}`
+        });
+    }
+
+    // =========================
+    // UNKNOWN ITEM
+    // =========================
+
+    return interaction.reply({
+        content: '❌ Unknown item type.',
+        ephemeral: true
+    });
+}
