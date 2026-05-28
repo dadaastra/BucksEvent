@@ -5,20 +5,6 @@
 
 export const shopItems = [
     {
-        id: 'extra_work',
-        name: 'Extra Work Shift',
-        price: 5000,
-        description: 'Allows 1 extra use of the `/work` command.',
-        type: 'consumable',
-        maxQuantity: 5,
-cooldown: 86400000,
-        effect: {
-            type: 'command_boost',
-            command: 'work',
-            uses: 1
-        }
-    },
-    {
         id: 'bank_upgrade_1',
         name: 'Bank Upgrade I',
         price: 15000,
@@ -28,18 +14,6 @@ cooldown: 86400000,
         effect: {
             type: 'bank_capacity',
             multiplier: 1.5
-        }
-    },
-    {
-        id: 'diamond_pickaxe',
-        name: 'Diamond Pickaxe',
-        price: 50000,
-        description: 'Increases yield from `/mine`',
-        type: 'tool',
-        durability: 100,
-        effect: {
-            type: 'mining_yield',
-            multiplier: 2.0
         }
     },
     {
