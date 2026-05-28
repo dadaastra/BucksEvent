@@ -20,12 +20,12 @@ export const shopItems = [
         id: 'rich',
         name: 'Rich',
         price: 15,
-        description: 'A special role granting a fancy color and a 10% daily bonus.',
+        description: 'Buy a rich role.',
         type: 'role',
 roleId: 1355617103230537817,
 
           effect: {
-            type: 'role',
+            type: 'discord_role',
         }
     },
     {
