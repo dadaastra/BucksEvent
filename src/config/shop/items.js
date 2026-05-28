@@ -50,7 +50,7 @@ cooldown: 86400000,
         type: 'role',
 
         // Replace with your Rich Role ID
-        roleId: 'RICH_ROLE_ID_HERE',
+        roleId: '1355617103230537817',
 
         effect: {
             type: 'discord_role'
