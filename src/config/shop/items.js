@@ -45,7 +45,7 @@ cooldown: 86400000,
     {
         id: 'rich',
         name: 'Rich',
-        price: 30000,
+        price: 30,
         description: 'get a rich role.',
         type: 'role',
 roleId: 1355617103230537817,
