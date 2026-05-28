@@ -53,7 +53,7 @@ cooldown: 86400000,
         roleId: 1355617103230537817,
 
         effect: {
-            type: 'role'
+            type: 'roleAdd'
         }
     },
     {
