@@ -86,7 +86,7 @@ export default {
 
                 await InteractionHelper.safeEditReply(interaction, {
                     content:
-                        `Hey poor, you are on cooldown! Try again in **${hours}h ${minutes}m ${seconds}s** later. haha!!`
+                        `Be ready for work, time will be end in **${hours}h ${minutes}m ${seconds}s** later.`
                 });
 
                 return;
@@ -133,7 +133,7 @@ export default {
 
         await InteractionHelper.safeEditReply(interaction, {
             content:
-                `💸 You have worked and earned **$${earned.toLocaleString()}** great!!`
+                `💸 You finished work and earned **$${earned.toLocaleString()}** great!!`
         });
 
         return;
