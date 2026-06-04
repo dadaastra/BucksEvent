@@ -329,7 +329,7 @@ function getErrorTitle(errorType) {
         [ErrorTypes.NETWORK]: "🌐 Network Error",
         [ErrorTypes.DISCORD_API]: "🔌 API Error",
         [ErrorTypes.USER_INPUT]: "💬 Input Error",
-        [ErrorTypes.RATE_LIMIT]: "⏱️ Slow Down!",
+        [ErrorTypes.RATE_LIMIT]: "",
         [ErrorTypes.UNKNOWN]: "❓ Unexpected Error"
     };
     
