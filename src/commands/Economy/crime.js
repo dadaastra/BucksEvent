@@ -6,8 +6,8 @@ import { MessageTemplates } from '../../utils/messageTemplates.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 const CRIME_COOLDOWN = 60 * 60 * 1000;
-const MIN_CRIME_AMOUNT = 100;
-const MAX_CRIME_AMOUNT = 2000;
+const MIN_CRIME_AMOUNT = 10;
+const MAX_CRIME_AMOUNT = 200;
 const FAILURE_RATE = 0.4;
 const JAIL_TIME = 2 * 60 * 60 * 1000;
 
@@ -109,7 +109,7 @@ export default {
                 await setEconomyData(client, guildId, userId, userData);
                 
                 const embed = errorEmbed(
-                    "Crime Failed!",
+                    "<a:6c438fd42a181438d014a201c41dad1b:1512073492445663303> Crime Failed!",
                     `You were caught while attempting ${crime.name} and have been sent to jail! ` +
                     `You were fined ${fine} coins and will be in jail for 2 hours.`
                 );
