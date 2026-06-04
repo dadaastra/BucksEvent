@@ -236,8 +236,8 @@ export async function handleInteractionError(interaction, error, context = {}) {
 
     if (errorType === ErrorTypes.RATE_LIMIT) {
         embed.addFields({
-            name: "💡 Tip",
-            value: "Rate limits help prevent spam. Wait a moment before trying again."
+            name: "",
+            value: ""
         });
     } else if (errorType === ErrorTypes.PERMISSION) {
         embed.addFields({
