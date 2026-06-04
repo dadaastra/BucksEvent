@@ -53,7 +53,7 @@ export default {
                 throw createError(
                     "User is in jail",
                     ErrorTypes.RATE_LIMIT,
-                    `You're in jail for ${timeLeft} more minutes!`,
+                    `<a:6c438fd42a181438d014a201c41dad1b:1512073492445663303> You're in jail for ${timeLeft} more minutes!`,
                     { jailTimeRemaining: userData.jailedUntil - now }
                 );
             }
