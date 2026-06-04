@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 const WORK_COOLDOWN = 5 * 60 * 1000;
-const MIN_WORK_AMOUNT = 50;
+const MIN_WORK_AMOUNT = 10;
 const MAX_WORK_AMOUNT = 100;
 const LAPTOP_MULTIPLIER = 1.5;
 
