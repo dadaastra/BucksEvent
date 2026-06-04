@@ -156,7 +156,7 @@ export default {
         if (targetUser.id === interaction.user.id) {
 
             message =
-                `💵 Currently you have **$${total.toLocaleString()}** micebucks.`;
+                `Currently you have **<:1780553643790:1512073620229460040>${total.toLocaleString()}** anastar.`;
 
         }
 
@@ -164,7 +164,7 @@ export default {
         else {
 
             message =
-                `💰 ${targetUser.username} has **$${total.toLocaleString()}** micebucks.`;
+                `${targetUser.username} has **<:1780553643790:1512073620229460040>${total.toLocaleString()}** anastar.`;
 
         }
 
