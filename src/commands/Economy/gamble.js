@@ -98,7 +98,7 @@ export default {
             if (win) {
                 const amountWon = Math.floor(betAmount * PAYOUT_MULTIPLIER);
                 cashChange = amountWon;
-                resultMessage = `🎉 **Congratulations!** 🎉\nYou won **$${amountWon.toLocaleString()}** from your $${betAmount.toLocaleString()} bet!${itemMessage}`;
+                resultMessage = `**Yaaaahoooo!**\n{user} You won **<:anastar:1512073620229460040>${amountWon.toLocaleString()}** from your <:anastar:1512073620229460040>${betAmount.toLocaleString()} bet!${itemMessage}`;
             } else {
                 cashChange = -betAmount;
                 resultMessage = `💔 **Alas!** 💔\nYou lost the gamble. Better luck next time! You lost **$${betAmount.toLocaleString()}**.${itemMessage}`;
@@ -111,7 +111,7 @@ export default {
             await setEconomyData(client, guildId, userId, userData);
 
             // Add balance info to message
-            resultMessage += `\n\n💰 **New Balance:** $${userData.wallet.toLocaleString()}`;
+            resultMessage += ``;
             
             // Add item info to message
             if (usedClover) {
@@ -123,7 +123,7 @@ export default {
             }
             
             // Add cooldown info
-            resultMessage += `\n⏰ **Next gamble available in 10 seconds**`;
+            resultMessage += ``;
 
             // Send the reply
             if (deferred) {
