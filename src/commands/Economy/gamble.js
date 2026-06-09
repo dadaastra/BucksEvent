@@ -1,15 +1,12 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
 import { getEconomyData, setEconomyData } from '../../utils/economy.js';
 import { withErrorHandling, createError, ErrorTypes } from '../../utils/errorHandler.js';
-import { MessageTemplates } from '../../utils/messageTemplates.js';
-import { InteractionHelper } from '../../utils/interactionHelper.js';
 
 const BASE_WIN_CHANCE = 0.4;
 const CLOVER_WIN_BONUS = 0.1;
 const CHARM_WIN_BONUS = 0.08;
 const PAYOUT_MULTIPLIER = 2.0;
-const GAMBLE_COOLDOWN = 5 * 60 * 1000;
+const GAMBLE_COOLDOWN = 10 * 1000; // 10 seconds cooldown
 
 export default {
     data: new SlashCommandBuilder()
@@ -50,33 +47,26 @@ export default {
             // Check cooldown
             if (now < lastGamble + GAMBLE_COOLDOWN) {
                 const remaining = lastGamble + GAMBLE_COOLDOWN - now;
-                const minutes = Math.floor(remaining / (1000 * 60));
-                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-
-                const cooldownEmbed = errorEmbed(
-                    "⏰ Cooldown Active",
-                    `You need to cool down before gambling again. Wait **${minutes}m ${seconds}s**.`
-                );
+                const seconds = Math.ceil(remaining / 1000);
+                
+                const cooldownMessage = `⏰ **Cooldown Active!** Please wait **${seconds} seconds** before gambling again.`;
                 
                 if (deferred) {
-                    await interaction.editReply({ embeds: [cooldownEmbed] });
+                    await interaction.editReply({ content: cooldownMessage });
                 } else {
-                    await interaction.reply({ embeds: [cooldownEmbed] });
+                    await interaction.reply({ content: cooldownMessage });
                 }
                 return;
             }
 
             // Check if user has enough money
             if (userData.wallet < betAmount) {
-                const insufficientEmbed = errorEmbed(
-                    "💰 Insufficient Funds",
-                    `You only have **$${userData.wallet.toLocaleString()}** cash, but you are trying to bet **$${betAmount.toLocaleString()}**.`
-                );
+                const insufficientMessage = `💰 **Insufficient Funds!** You only have **$${userData.wallet.toLocaleString()}** cash, but you're trying to bet **$${betAmount.toLocaleString()}**.`;
                 
                 if (deferred) {
-                    await interaction.editReply({ embeds: [insufficientEmbed] });
+                    await interaction.editReply({ content: insufficientMessage });
                 } else {
-                    await interaction.reply({ embeds: [insufficientEmbed] });
+                    await interaction.reply({ content: insufficientMessage });
                 }
                 return;
             }
@@ -90,36 +80,28 @@ export default {
             if (cloverCount > 0) {
                 winChance += CLOVER_WIN_BONUS;
                 userData.inventory.lucky_clover -= 1;
-                itemMessage = `\n🍀 **Lucky Clover Consumed:** Your win chance was boosted to ${Math.round(winChance * 100)}%!`;
+                itemMessage = ` 🍀 (Lucky Clover used - Win chance: ${Math.round(winChance * 100)}%)`;
                 usedClover = true;
             } else if (charmCount > 0) {
                 winChance += CHARM_WIN_BONUS;
                 userData.inventory.lucky_charm -= 1;
                 const remainingCharms = userData.inventory.lucky_charm;
-                itemMessage = `\n✨ **Lucky Charm Used:** Your win chance was boosted to ${Math.round(winChance * 100)}%! (${remainingCharms} uses remaining)`;
+                itemMessage = ` ✨ (Lucky Charm used - Win chance: ${Math.round(winChance * 100)}% - ${remainingCharms} uses left)`;
                 usedCharm = true;
             }
 
             // Determine win/loss
             const win = Math.random() < winChance;
             let cashChange = 0;
-            let resultEmbed;
+            let resultMessage = "";
 
             if (win) {
                 const amountWon = Math.floor(betAmount * PAYOUT_MULTIPLIER);
                 cashChange = amountWon;
-
-                resultEmbed = successEmbed(
-                    "🎉 You Won! 🎉",
-                    `You gambled **$${betAmount.toLocaleString()}** and won **$${amountWon.toLocaleString()}**!${itemMessage}`
-                );
+                resultMessage = `🎉 **Congratulations!** 🎉\nYou won **$${amountWon.toLocaleString()}** from your $${betAmount.toLocaleString()} bet!${itemMessage}`;
             } else {
                 cashChange = -betAmount;
-
-                resultEmbed = errorEmbed(
-                    "💔 You Lost... 💔",
-                    `You gambled **$${betAmount.toLocaleString()}** and lost it all. Better luck next time!${itemMessage}`
-                );
+                resultMessage = `💔 **Alas!** 💔\nYou lost the gamble. Better luck next time! You lost **$${betAmount.toLocaleString()}**.${itemMessage}`;
             }
 
             // Update user data
@@ -128,59 +110,37 @@ export default {
 
             await setEconomyData(client, guildId, userId, userData);
 
-            // Add balance field to embed
-            resultEmbed.addFields({
-                name: "💰 New Balance",
-                value: `$${userData.wallet.toLocaleString()}`,
-                inline: true
-            });
-
-            // Add win chance to embed
-            resultEmbed.addFields({
-                name: "🎲 Win Chance",
-                value: `${Math.round(winChance * 100)}%`,
-                inline: true
-            });
-
-            // Set footer with additional info
+            // Add balance info to message
+            resultMessage += `\n\n💰 **New Balance:** $${userData.wallet.toLocaleString()}`;
+            
+            // Add item info to message
             if (usedClover) {
                 const remainingClovers = userData.inventory.lucky_clover || 0;
-                resultEmbed.setFooter({ 
-                    text: `🍀 ${remainingClovers} Lucky Clovers remaining | Cooldown: 5 minutes` 
-                });
+                resultMessage += `\n🍀 **Remaining Lucky Clovers:** ${remainingClovers}`;
             } else if (usedCharm) {
                 const remainingCharms = userData.inventory.lucky_charm || 0;
-                resultEmbed.setFooter({ 
-                    text: `✨ ${remainingCharms} Lucky Charm uses remaining | Cooldown: 5 minutes` 
-                });
-            } else {
-                resultEmbed.setFooter({ 
-                    text: `Base win chance: ${Math.round(BASE_WIN_CHANCE * 100)}% | Cooldown: 5 minutes` 
-                });
+                resultMessage += `\n✨ **Remaining Lucky Charm uses:** ${remainingCharms}`;
             }
-
-            // Set timestamp
-            resultEmbed.setTimestamp();
+            
+            // Add cooldown info
+            resultMessage += `\n⏰ **Next gamble available in 10 seconds**`;
 
             // Send the reply
             if (deferred) {
-                await interaction.editReply({ embeds: [resultEmbed] });
+                await interaction.editReply({ content: resultMessage });
             } else {
-                await interaction.reply({ embeds: [resultEmbed] });
+                await interaction.reply({ content: resultMessage });
             }
 
         } catch (error) {
             console.error('Error in gamble command:', error);
             
-            const errorMessage = errorEmbed(
-                "❌ Error",
-                "An error occurred while processing your gamble. Please try again later."
-            );
+            const errorMessage = "❌ **Error!** An error occurred while processing your gamble. Please try again later.";
             
             if (deferred) {
-                await interaction.editReply({ embeds: [errorMessage] }).catch(console.error);
+                await interaction.editReply({ content: errorMessage }).catch(console.error);
             } else {
-                await interaction.reply({ embeds: [errorMessage] }).catch(console.error);
+                await interaction.reply({ content: errorMessage }).catch(console.error);
             }
         }
     })
