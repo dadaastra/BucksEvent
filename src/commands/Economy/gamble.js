@@ -24,113 +24,164 @@ export default {
         ),
 
     execute: withErrorHandling(async (interaction, config, client) => {
-        const deferred = await InteractionHelper.safeDefer(interaction);
-        if (!deferred) return;
-            
+        // Properly handle the interaction deferral
+        let deferred = false;
+        try {
+            if (!interaction.deferred && !interaction.replied) {
+                await interaction.deferReply();
+                deferred = true;
+            }
+        } catch (error) {
+            console.error('Failed to defer reply:', error);
+        }
+
+        try {
             const userId = interaction.user.id;
             const guildId = interaction.guildId;
             const betAmount = interaction.options.getInteger("amount");
             const now = Date.now();
 
+            // Get user data
             const userData = await getEconomyData(client, guildId, userId);
             const lastGamble = userData.lastGamble || 0;
-            let cloverCount = userData.inventory["lucky_clover"] || 0;
-            let charmCount = userData.inventory["lucky_charm"] || 0;
+            let cloverCount = userData.inventory?.lucky_clover || 0;
+            let charmCount = userData.inventory?.lucky_charm || 0;
 
+            // Check cooldown
             if (now < lastGamble + GAMBLE_COOLDOWN) {
                 const remaining = lastGamble + GAMBLE_COOLDOWN - now;
                 const minutes = Math.floor(remaining / (1000 * 60));
                 const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
 
-                throw createError(
-                    "Gamble cooldown active",
-                    ErrorTypes.RATE_LIMIT,
-                    `You need to cool down before gambling again. Wait **${minutes}m ${seconds}s**.`,
-                    { remaining, cooldownType: 'gamble' }
+                const cooldownEmbed = errorEmbed(
+                    "⏰ Cooldown Active",
+                    `You need to cool down before gambling again. Wait **${minutes}m ${seconds}s**.`
                 );
+                
+                if (deferred) {
+                    await interaction.editReply({ embeds: [cooldownEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [cooldownEmbed] });
+                }
+                return;
             }
 
+            // Check if user has enough money
             if (userData.wallet < betAmount) {
-                throw createError(
-                    "Insufficient cash for gamble",
-                    ErrorTypes.VALIDATION,
-                    `You only have $${userData.wallet.toLocaleString()} cash, but you are trying to bet $${betAmount.toLocaleString()}.`,
-                    { required: betAmount, current: userData.wallet }
+                const insufficientEmbed = errorEmbed(
+                    "💰 Insufficient Funds",
+                    `You only have **$${userData.wallet.toLocaleString()}** cash, but you are trying to bet **$${betAmount.toLocaleString()}**.`
                 );
+                
+                if (deferred) {
+                    await interaction.editReply({ embeds: [insufficientEmbed] });
+                } else {
+                    await interaction.reply({ embeds: [insufficientEmbed] });
+                }
+                return;
             }
 
+            // Calculate win chance with items
             let winChance = BASE_WIN_CHANCE;
-            let cloverMessage = "";
+            let itemMessage = "";
             let usedClover = false;
             let usedCharm = false;
-
             
             if (cloverCount > 0) {
                 winChance += CLOVER_WIN_BONUS;
-                userData.inventory["lucky_clover"] -= 1;
-                cloverMessage = `\n🍀 **Lucky Clover Consumed:** Your win chance was boosted!`;
+                userData.inventory.lucky_clover -= 1;
+                itemMessage = `\n🍀 **Lucky Clover Consumed:** Your win chance was boosted to ${Math.round(winChance * 100)}%!`;
                 usedClover = true;
-            }
-            
-            else if (charmCount > 0) {
+            } else if (charmCount > 0) {
                 winChance += CHARM_WIN_BONUS;
-                userData.inventory["lucky_charm"] -= 1;
-                cloverMessage = `\n🍀 **Lucky Charm Used (${charmCount - 1} uses remaining):** Your win chance was boosted!`;
+                userData.inventory.lucky_charm -= 1;
+                const remainingCharms = userData.inventory.lucky_charm;
+                itemMessage = `\n✨ **Lucky Charm Used:** Your win chance was boosted to ${Math.round(winChance * 100)}%! (${remainingCharms} uses remaining)`;
                 usedCharm = true;
             }
 
+            // Determine win/loss
             const win = Math.random() < winChance;
             let cashChange = 0;
             let resultEmbed;
 
             if (win) {
                 const amountWon = Math.floor(betAmount * PAYOUT_MULTIPLIER);
-cashChange = amountWon;
+                cashChange = amountWon;
 
                 resultEmbed = successEmbed(
-                    "🎉 You Won!",
-                    `You successfully gambled and turned your **$${betAmount.toLocaleString()}** bet into **$${amountWon.toLocaleString()}**!${cloverMessage}`,
+                    "🎉 You Won! 🎉",
+                    `You gambled **$${betAmount.toLocaleString()}** and won **$${amountWon.toLocaleString()}**!${itemMessage}`
                 );
             } else {
-cashChange = -betAmount;
+                cashChange = -betAmount;
 
                 resultEmbed = errorEmbed(
-                    "💔 You Lost...",
-                    `The dice rolled against you. You lost your **$${betAmount.toLocaleString()}** bet.`,
+                    "💔 You Lost... 💔",
+                    `You gambled **$${betAmount.toLocaleString()}** and lost it all. Better luck next time!${itemMessage}`
                 );
             }
 
+            // Update user data
             userData.wallet = (userData.wallet || 0) + cashChange;
-userData.lastGamble = now;
+            userData.lastGamble = now;
 
             await setEconomyData(client, guildId, userId, userData);
 
-            const newCash = userData.wallet;
-
+            // Add balance field to embed
             resultEmbed.addFields({
-                name: "💵 New Cash Balance",
-                value: `$${newCash.toLocaleString()}`,
-                inline: true,
+                name: "💰 New Balance",
+                value: `$${userData.wallet.toLocaleString()}`,
+                inline: true
             });
 
+            // Add win chance to embed
+            resultEmbed.addFields({
+                name: "🎲 Win Chance",
+                value: `${Math.round(winChance * 100)}%`,
+                inline: true
+            });
+
+            // Set footer with additional info
             if (usedClover) {
-                resultEmbed.setFooter({
-                    text: `You have ${userData.inventory["lucky_clover"]} Lucky Clovers left. Win chance was ${Math.round(winChance * 100)}%.`,
+                const remainingClovers = userData.inventory.lucky_clover || 0;
+                resultEmbed.setFooter({ 
+                    text: `🍀 ${remainingClovers} Lucky Clovers remaining | Cooldown: 5 minutes` 
                 });
             } else if (usedCharm) {
-                resultEmbed.setFooter({
-                    text: `You have ${userData.inventory["lucky_charm"]} Lucky Charm uses left. Win chance was ${Math.round(winChance * 100)}%.`,
+                const remainingCharms = userData.inventory.lucky_charm || 0;
+                resultEmbed.setFooter({ 
+                    text: `✨ ${remainingCharms} Lucky Charm uses remaining | Cooldown: 5 minutes` 
                 });
             } else {
-                resultEmbed.setFooter({
-                    text: `Next gamble available in 5 minutes. Base win chance: ${Math.round(BASE_WIN_CHANCE * 100)}%.`,
+                resultEmbed.setFooter({ 
+                    text: `Base win chance: ${Math.round(BASE_WIN_CHANCE * 100)}% | Cooldown: 5 minutes` 
                 });
             }
 
-            await InteractionHelper.safeEditReply(interaction, { embeds: [resultEmbed] });
-    }, { command: 'gamble' })
+            // Set timestamp
+            resultEmbed.setTimestamp();
+
+            // Send the reply
+            if (deferred) {
+                await interaction.editReply({ embeds: [resultEmbed] });
+            } else {
+                await interaction.reply({ embeds: [resultEmbed] });
+            }
+
+        } catch (error) {
+            console.error('Error in gamble command:', error);
+            
+            const errorMessage = errorEmbed(
+                "❌ Error",
+                "An error occurred while processing your gamble. Please try again later."
+            );
+            
+            if (deferred) {
+                await interaction.editReply({ embeds: [errorMessage] }).catch(console.error);
+            } else {
+                await interaction.reply({ embeds: [errorMessage] }).catch(console.error);
+            }
+        }
+    })
 };
-
-
-
-
