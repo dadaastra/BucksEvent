@@ -98,10 +98,10 @@ export default {
             if (win) {
                 const amountWon = Math.floor(betAmount * PAYOUT_MULTIPLIER);
                 cashChange = amountWon;
-                resultMessage = `**Yaaaahoooo!**\n{user} You won **<:anastar:1512073620229460040>${amountWon.toLocaleString()}** from your <:anastar:1512073620229460040>${betAmount.toLocaleString()} bet!${itemMessage}`;
+                resultMessage = `**Yaaaahoooo!**\n<a:coinflipanim:1513957589971632279> You won **<:anastar:1512073620229460040>${amountWon.toLocaleString()}** from your <:anastar:1512073620229460040>${betAmount.toLocaleString()} Anastar!!${itemMessage}`;
             } else {
                 cashChange = -betAmount;
-                resultMessage = `💔 **Alas!** 💔\nYou lost the gamble. Better luck next time! You lost **$${betAmount.toLocaleString()}**.${itemMessage}`;
+                resultMessage = `**Alas!**\n<a:coinflipanim:1513957589971632279> You lost the gamble. Better luck next time! You lost **<:anastar:1512073620229460040>${betAmount.toLocaleString()}**.${itemMessage}`;
             }
 
             // Update user data
