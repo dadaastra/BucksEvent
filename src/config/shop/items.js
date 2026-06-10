@@ -29,15 +29,15 @@ roleId: 1355617103230537817,
         }
     },
     {
-        id: 'lucky_clover',
-        name: 'Lucky Clover',
-        price: 10000,
-        description: 'Increases the chance of winning a higher payout on `/gamble` once.',
+        id: 'ganjar',
+        name: 'Ganja',
+        price: 50,
+        description: 'Increases the 50% chance of winning a higher payout on `/gamble` once.',
         type: 'consumable',
         maxQuantity: 10,
         effect: {
             type: 'gamble_boost',
-            multiplier: 1.5,
+            multiplier: 50,
             uses: 1
         }
     },
