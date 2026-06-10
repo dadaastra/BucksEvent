@@ -29,7 +29,7 @@ roleId: 1355617103230537817,
         }
     },
     {
-        id: 'ganjar',
+        id: 'ganja',
         name: 'Ganja',
         price: 50,
         description: 'Increases the 50% chance of winning a higher payout on `/gamble` once.',
@@ -78,15 +78,15 @@ roleId: 1355617103230537817,
         }
     },
     {
-        id: 'lucky_charm',
-        name: '🍀 Lucky Charm',
+        id: '25g ganja',
+        name: '🍀 25g ganja',
         price: 10000,
         description: 'Increases luck for gambling. Has 3 uses before being consumed.',
         type: 'consumable',
         maxQuantity: 10,
         effect: {
             type: 'gamble_boost',
-            multiplier: 1.3,
+            multiplier: 60,
             uses: 3
         }
     },
