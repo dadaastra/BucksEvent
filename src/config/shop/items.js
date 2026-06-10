@@ -80,7 +80,7 @@ roleId: 1355617103230537817,
     {
         id: '25g ganja',
         name: '🍀 25g ganja',
-        price: 10000,
+        price: 1000,
         description: 'Increases luck for gambling. Has 3 uses before being consumed.',
         type: 'consumable',
         maxQuantity: 10,
